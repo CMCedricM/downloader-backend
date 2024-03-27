@@ -1,0 +1,53 @@
+// database
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+// generator
+generator client {
+    provider             = "prisma-client-py"
+    recursive_type_depth = 5
+}
+
+model User {
+    email         String         @id @map("_id") @db.ObjectId
+    userFullName  String
+    DataOwnership DataOwnership?
+}
+
+model DataOwnership {
+    id           String         @id @default(auto()) @map("_id") @db.ObjectId
+    user         User           @relation(fields: [userId], references: [email])
+    userId       String         @unique @db.ObjectId
+    UserPlaylist UserPlaylist[]
+    Video        Video[]
+}
+
+enum PLAYLISTSTATUS {
+    Active
+    Inactive
+}
+
+model UserPlaylist {
+    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    ownership       DataOwnership? @relation(fields: [dataOwnershipId], references: [id])
+    dataOwnershipId String?        @db.ObjectId
+    PlayListTitle   String
+    PlayListURL     String
+    LastSynced      String
+    Status          PLAYLISTSTATUS @default(Active)
+    DateCreated     DateTime       @default(now())
+    DateUpdated     DateTime       @updatedAt
+}
+
+model Video {
+    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    YT_Identifier   String
+    Video_Title     String
+    ownership       DataOwnership? @relation(fields: [dataOwnershipId], references: [id])
+    dataOwnershipId String?        @db.ObjectId
+    VideoURL        String
+    Comments        String?
+    DateCreated     DateTime       @default(now())
+}
