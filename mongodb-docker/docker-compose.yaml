@@ -1,26 +1,11 @@
-# Use root/example as user/password credentials
-version: "3.1"
+version: "3"
 
 services:
   mongo:
-    image: mongo
-    restart: always
+    image: prismagraphql/mongo-single-replica:5.0.3
     container_name: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: 1521Turtle
     ports:
       - "27017:27017"
-    volumes:
-      - ./db_data/:/data/db/
-
-  mongo-express:
-    image: mongo-express
-    restart: always
-    container_name: mongo-express
-    ports:
-      - 8081:8081
     environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: 1521Turtle
-      ME_CONFIG_MONGODB_URL: mongodb://root:1521Turtle@mongo:27017/
+      MONGO_INITDB_ROOT_USERNAME: "cedric-men"
+      MONGO_INITDB_ROOT_PASSWORD: "1521Turtle"
