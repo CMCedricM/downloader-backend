@@ -43,12 +43,12 @@ model UserPlaylist {
 }
 
 model Video {
-    id              Int            @id @default(autoincrement())
+    id              Int           @id @default(autoincrement())
     YT_Identifier   String
-    Video_Title     String
-    ownership       DataOwnership? @relation(fields: [dataOwnershipId], references: [id])
-    dataOwnershipId Int?
+    Video_Title     String?
+    ownership       DataOwnership @relation(fields: [dataOwnershipId], references: [id])
+    dataOwnershipId Int
     VideoURL        String
     Comments        String?
-    DateCreated     DateTime       @default(now())
+    DateCreated     DateTime      @default(now())
 }

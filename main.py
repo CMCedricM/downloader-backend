@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import googleapiclient.discovery as gAPI
 from prisma import Prisma, Client
+from prisma.models import User, UserPlaylist, DataOwnership, Video
 import json, os, argparse, asyncio
 
 load_dotenv()
@@ -21,7 +22,7 @@ def getVideoURLs(videoData: list) -> list[str]:
     return videoTags     
 
 
-async def fetchUserPlaylist(UserID: int): 
+async def fetchUserPlaylist(UserID: int) -> User | None: 
     userInfo = await prisma.user.find_unique(where={'id' : int(UserID)}, include={'DataOwnership': True})
     return userInfo
 
@@ -31,7 +32,7 @@ async def main():
     parser = argparse.ArgumentParser(description="A Program to Grab Information from a Youtube Playlist")
     parser.add_argument('--userId', type=str, default=None, help="User id from postrgres database")
     args = parser.parse_args()
-    USER_ID = args.userId
+    USER_ID: int = args.userId
     
     if(not USER_ID): 
        print("Error USER_ID ==> No USER_ID provided in args\n Proper usage: python3 ./main.py --userId  <userID>")
@@ -46,7 +47,7 @@ async def main():
     
     for i in range(len(PLAYLIST_IDS)):
         current_playlist = PLAYLIST_IDS[i].PlayListURL
-        videoTagsData: list[str] = []
+        videoTagsData: list[object[int, str]] = []
         playlists = youtube.playlistItems().list(part=['id','status', "contentDetails"],playlistId=current_playlist)
         data = playlists.execute()
         videoTagsData.extend(getVideoURLs(data["items"]))
@@ -62,6 +63,15 @@ async def main():
             videoTagsData.extend(getVideoURLs(dataResponse['items']))
             
         print("Video Tags: ", videoTagsData)
+ 
+
+    
+    batcher = prisma.batch_()
+    for dataItem in videoTagsData: 
+        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem, 'VideoURL': dataItem})
+    if(len(videoTagsData) > 1):
+        await batcher.commit()    
+    
     
 if __name__ == "__main__": 
     asyncio.run(main())
