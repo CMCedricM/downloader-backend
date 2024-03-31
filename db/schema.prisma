@@ -1,6 +1,6 @@
 // database
 datasource db {
-    provider = "mongodb"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
@@ -11,16 +11,16 @@ generator client {
 }
 
 model User {
-    id            String         @id @default(auto()) @map("_id") @db.ObjectId
+    id            Int            @id @default(autoincrement())
     email         String
     userFullName  String
     DataOwnership DataOwnership?
 }
 
 model DataOwnership {
-    id           String         @id @default(auto()) @map("_id") @db.ObjectId
+    id           Int            @id @default(autoincrement())
     user         User           @relation(fields: [userId], references: [id])
-    userId       String         @unique @db.ObjectId
+    userId       Int            @unique
     UserPlaylist UserPlaylist[]
     Video        Video[]
 }
@@ -31,9 +31,9 @@ enum PLAYLISTSTATUS {
 }
 
 model UserPlaylist {
-    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    id              Int            @id @default(autoincrement())
     ownership       DataOwnership? @relation(fields: [dataOwnershipId], references: [id])
-    dataOwnershipId String?        @db.ObjectId
+    dataOwnershipId Int?
     PlayListTitle   String
     PlayListURL     String
     LastSynced      String?
@@ -43,11 +43,11 @@ model UserPlaylist {
 }
 
 model Video {
-    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    id              Int            @id @default(autoincrement())
     YT_Identifier   String
     Video_Title     String
     ownership       DataOwnership? @relation(fields: [dataOwnershipId], references: [id])
-    dataOwnershipId String?        @db.ObjectId
+    dataOwnershipId Int?
     VideoURL        String
     Comments        String?
     DateCreated     DateTime       @default(now())
