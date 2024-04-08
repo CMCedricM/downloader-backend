@@ -46,7 +46,7 @@ model Video {
     id              Int           @id @default(autoincrement())
     YT_Identifier   String
     Video_Title     String?
-    ownership       DataOwnership @relation(fields: [dataOwnershipId], references: [id])
+    ownership       DataOwnership @relation(fields: [dataOwnershipId], references: [id], onDelete: Cascade)
     dataOwnershipId Int
     VideoURL        String
     Comments        String?

@@ -5,6 +5,13 @@ from prisma import Prisma
 async def main() -> None: 
     prisma = Prisma()
     await prisma.connect()
+    # Delete All Data
+    await prisma.userplaylist.delete_many()
+    print("Deleted User PlayLists")
+    await prisma.dataownership.delete_many()
+    print("Deleted Data Ownership")
+    await prisma.user.delete_many()
+    print("Deleted User Data")
     
     user = await prisma.user.create(
         data={

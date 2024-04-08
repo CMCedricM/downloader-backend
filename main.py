@@ -6,6 +6,9 @@ import json, os, argparse, asyncio
 
 load_dotenv()
 
+
+LOGS_LOCATION = os.path.join(os.path.dirname(__file__), "Logs")
+
 api_service_name = os.getenv("GOOGLE_API_SERVICE")
 api_version = os.getenv("GOOGLE_API_VERSION")
 DEVELOPER_KEY = os.getenv("GOOGLE_API_KEY")
@@ -14,11 +17,18 @@ youtube = gAPI.build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
 
 prisma = Prisma()
 
-def getVideoURLs(videoData: list) -> list[str]: 
-    videoTags: list[str] = []
+parser = argparse.ArgumentParser(description="A Program to Grab Information from a Youtube Playlist")
+parser.add_argument('--userId', type=str, default=None, help="User id from postrgres database")
+parser.add_argument('--print_response', type=bool, default=False, help="Log the response data from the youtube api")
+args = parser.parse_args()
+USER_ID: int = args.userId
+LOG_RESPONSE: bool = args.print_response
+
+def getVideoURLs(videoData: list) -> list[dict[str, str]]: 
+    videoTags: list[dict[str,str]] = []
     for i in range(len(videoData)):
         if("contentDetails" in videoData[i] and "videoId" in videoData[i]["contentDetails"]): 
-            videoTags.append(videoData[i]["contentDetails"]["videoId"])
+            videoTags.append({"VideoTag": videoData[i]["contentDetails"]["videoId"], "VideoTitle" : videoData[i]["snippet"]["title"]})
     return videoTags     
 
 
@@ -28,11 +38,6 @@ async def fetchUserPlaylist(UserID: int) -> User | None:
 
 async def main():
     await prisma.connect()
-    
-    parser = argparse.ArgumentParser(description="A Program to Grab Information from a Youtube Playlist")
-    parser.add_argument('--userId', type=str, default=None, help="User id from postrgres database")
-    args = parser.parse_args()
-    USER_ID: int = args.userId
     
     if(not USER_ID): 
        print("Error USER_ID ==> No USER_ID provided in args\n Proper usage: python3 ./main.py --userId  <userID>")
@@ -48,27 +53,25 @@ async def main():
     for i in range(len(PLAYLIST_IDS)):
         current_playlist = PLAYLIST_IDS[i].PlayListURL
         videoTagsData: list[object[int, str]] = []
-        playlists = youtube.playlistItems().list(part=['id','status', "contentDetails"],playlistId=current_playlist)
+        playlists = youtube.playlistItems().list(part=['id','status', "contentDetails", "snippet"],playlistId=current_playlist)
         data = playlists.execute()
         videoTagsData.extend(getVideoURLs(data["items"]))
 
 
         nextPageData = data["nextPageToken"] if "nextPageToken" in data else None
         while(nextPageData): 
-            dataRequest = youtube.playlistItems().list(part=['id','status', "contentDetails"],playlistId=current_playlist, pageToken=nextPageData)
+            dataRequest = youtube.playlistItems().list(part=['id','status', "contentDetails", "snippet"],playlistId=current_playlist, pageToken=nextPageData)
             dataResponse = dataRequest.execute()
             if "nextPageToken" in dataResponse: 
                 nextPageData = dataResponse["nextPageToken"] 
             else: nextPageData = None
             videoTagsData.extend(getVideoURLs(dataResponse['items']))
             
-        print("Video Tags: ", videoTagsData)
+        # print("Video Tags: ", videoTagsData)
  
-
-    
     batcher = prisma.batch_()
     for dataItem in videoTagsData: 
-        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem, 'VideoURL': dataItem})
+        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem["VideoTag"], 'VideoURL': dataItem["VideoTag"], "Video_Title": dataItem["VideoTitle"] })
     if(len(videoTagsData) > 1):
         await batcher.commit()    
     
