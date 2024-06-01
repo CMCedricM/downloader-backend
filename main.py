@@ -3,6 +3,7 @@ import googleapiclient.discovery as gAPI
 from prisma import Prisma, Client
 from prisma.models import User, UserPlaylist, DataOwnership, Video
 import json, os, argparse, asyncio
+from downloader.yt_grabber import Downloader
 
 load_dotenv()
 
@@ -33,9 +34,13 @@ def getVideoURLs(videoData: list) -> list[dict[str, str]]:
     return videoTags     
 
 
-async def fetchUserPlaylist(UserID: int) -> User | None: 
+async def fetchUserInformation(UserID: int) -> User | None: 
     userInfo = await prisma.user.find_unique(where={'id' : int(UserID)}, include={'DataOwnership': True})
     return userInfo
+
+async def downloadVideos(user: User, ownership: DataOwnership): 
+    download_class = Downloader(prisma, user, ownership)
+    await download_class.parseForDownload()
 
 async def main():
     await prisma.connect()
@@ -44,7 +49,7 @@ async def main():
        print("Error USER_ID ==> No USER_ID provided in args\n Proper usage: python3 ./main.py --userId  <userID>")
        exit(-1)
        
-    userData = await fetchUserPlaylist(USER_ID)
+    userData = await fetchUserInformation(USER_ID)
     if(not userData): 
         print(f"Error ==> User with ID {USER_ID} could not be found.")
         exit(-1)
@@ -75,6 +80,10 @@ async def main():
         batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem["VideoTag"], 'VideoURL': YOUTUBE_PREFIX + dataItem["VideoTag"], "Video_Title": dataItem["VideoTitle"] })
     if(len(videoTagsData) > 1):
         await batcher.commit()    
+        
+    # Video Downloads
+    await downloadVideos(userData, userData.DataOwnership)
+    
     
     
 if __name__ == "__main__": 
