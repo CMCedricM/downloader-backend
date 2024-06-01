@@ -12,6 +12,7 @@ LOGS_LOCATION = os.path.join(os.path.dirname(__file__), "Logs")
 api_service_name = os.getenv("GOOGLE_API_SERVICE")
 api_version = os.getenv("GOOGLE_API_VERSION")
 DEVELOPER_KEY = os.getenv("GOOGLE_API_KEY")
+YOUTUBE_PREFIX = os.getenv('YOUTUBE_PREFIX')
 
 youtube = gAPI.build(api_service_name, api_version, developerKey=DEVELOPER_KEY)
 
@@ -71,7 +72,7 @@ async def main():
  
     batcher = prisma.batch_()
     for dataItem in videoTagsData: 
-        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem["VideoTag"], 'VideoURL': dataItem["VideoTag"], "Video_Title": dataItem["VideoTitle"] })
+        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem["VideoTag"], 'VideoURL': YOUTUBE_PREFIX + dataItem["VideoTag"], "Video_Title": dataItem["VideoTitle"] })
     if(len(videoTagsData) > 1):
         await batcher.commit()    
     
