@@ -17,12 +17,21 @@ model User {
     DataOwnership DataOwnership?
 }
 
+model UserPreferenes {
+    id                Int            @id @default(autoincrement())
+    userEmail         String
+    DataOwnerhsip     DataOwnership? @relation(fields: [DataOwnershipId], references: [id])
+    DataOwnershipId   Int?
+    DestinationFolder String
+}
+
 model DataOwnership {
-    id           Int            @id @default(autoincrement())
-    user         User           @relation(fields: [userId], references: [id])
-    userId       Int            @unique
-    UserPlaylist UserPlaylist[]
-    Video        Video[]
+    id             Int              @id @default(autoincrement())
+    user           User             @relation(fields: [userId], references: [id])
+    userId         Int              @unique
+    UserPlaylist   UserPlaylist[]
+    Video          Video[]
+    UserPreferenes UserPreferenes[]
 }
 
 enum PLAYLISTSTATUS {
