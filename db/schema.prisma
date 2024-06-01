@@ -17,12 +17,13 @@ model User {
     DataOwnership DataOwnership?
 }
 
-model UserPreferenes {
+model UserPreferences {
     id                Int            @id @default(autoincrement())
     userEmail         String
     DataOwnerhsip     DataOwnership? @relation(fields: [DataOwnershipId], references: [id])
     DataOwnershipId   Int?
     DestinationFolder String
+	@@map("UserPreferenes")
 }
 
 model DataOwnership {
@@ -31,7 +32,7 @@ model DataOwnership {
     userId         Int              @unique
     UserPlaylist   UserPlaylist[]
     Video          Video[]
-    UserPreferenes UserPreferenes[]
+    UserPreferenes UserPreferences[]
 }
 
 enum PLAYLISTSTATUS {

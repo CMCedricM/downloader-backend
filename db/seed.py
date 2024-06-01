@@ -35,6 +35,12 @@ async def main() -> None:
         }
     )
     print("Created Playlist")
+    userPreferences = await prisma.userpreferences.create(data={
+        'DataOwnershipId': ownership.id,
+        'userEmail': user.email, 
+        'DestinationFolder': '/Users/cedric-personal/Documents/Programming/downloader-backend/test_out'
+    })
+    print("Created User Preferences")
     
 if __name__ == '__main__': 
     asyncio.run(main())
