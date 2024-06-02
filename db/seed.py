@@ -39,10 +39,10 @@ async def main() -> None:
     print("Created Playlist")
     musicPreferences = json.dumps({
         'format': 'm4a/bestaudio/best',
-        'postprocessors': {
+        'postprocessors': [{
              'key': 'FFmpegExtractAudio',
             'preferredcodec': 'm4a',
-        }
+        }]
     })
     userPreferences = await prisma.userpreferences.create(data={
         'DataOwnershipId': ownership.id,

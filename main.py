@@ -40,11 +40,11 @@ async def fetchUserInformation(UserID: int) -> User | None:
 
 async def downloadVideos(user: User, ownership: DataOwnership): 
     download_class = Downloader(prisma, user, ownership)
-    setup_complete = await download_class.parseForDownload()
+    setup_complete = await download_class.parseEntries()
     if(not setup_complete):
         print("There was an error")
         return
-    await download_class.runDownloader()
+    await download_class.runGrabber()
     
 
 async def main():
