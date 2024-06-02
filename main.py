@@ -78,7 +78,6 @@ async def main():
             else: nextPageData = None
             videoTagsData.extend(getVideoURLs(dataResponse['items']))
             
-        # print("Video Tags: ", videoTagsData)
     
     # Delete all old videos, we will just recreate them in the db later
     await prisma.video.delete_many(where={'dataOwnershipId' : userData.DataOwnership.id})
@@ -96,7 +95,7 @@ async def main():
     if(len(videoTagsData) > 1):
         await prisma.video.create_many(data_to_commit)
         
-    # # Video Downloads
+    # Video Downloads
     await retrieveVideos(userData, userData.DataOwnership)
     
     
