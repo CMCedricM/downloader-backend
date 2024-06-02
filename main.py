@@ -38,7 +38,7 @@ async def fetchUserInformation(UserID: int) -> User | None:
     userInfo = await prisma.user.find_unique(where={'id' : int(UserID)}, include={'DataOwnership': True})
     return userInfo
 
-async def downloadVideos(user: User, ownership: DataOwnership): 
+async def retrieveVideos(user: User, ownership: DataOwnership): 
     download_class = Downloader(prisma, user, ownership)
     setup_complete = await download_class.parseEntries()
     if(not setup_complete):
@@ -79,15 +79,25 @@ async def main():
             videoTagsData.extend(getVideoURLs(dataResponse['items']))
             
         # print("Video Tags: ", videoTagsData)
- 
-    batcher = prisma.batch_()
+    
+    # Delete all old videos, we will just recreate them in the db later
+    await prisma.video.delete_many(where={'dataOwnershipId' : userData.DataOwnership.id})
+
+    # Create any new videos
+    data_to_commit: list[Video] = []
     for dataItem in videoTagsData: 
-        batcher.video.create(data={'dataOwnershipId': userData.DataOwnership.id, 'YT_Identifier': dataItem["VideoTag"], 'VideoURL': YOUTUBE_PREFIX + dataItem["VideoTag"], "Video_Title": dataItem["VideoTitle"] })
+        newEntry: Video = {
+            'dataOwnershipId': userData.DataOwnership.id, 
+            'YT_Identifier': dataItem["VideoTag"], 
+            'VideoURL': YOUTUBE_PREFIX + dataItem["VideoTag"], 
+            'Video_Title': dataItem["VideoTitle"] 
+        }
+        data_to_commit.append(newEntry)
     if(len(videoTagsData) > 1):
-        await batcher.commit()    
+        await prisma.video.create_many(data_to_commit)
         
-    # Video Downloads
-    await downloadVideos(userData, userData.DataOwnership)
+    # # Video Downloads
+    # await retrieveVideos(userData, userData.DataOwnership)
     
     
     

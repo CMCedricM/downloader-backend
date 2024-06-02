@@ -18,7 +18,7 @@ class Downloader:
     
     async def parseEntries(self):
         if(not FFMPEG_LOCATION):
-            KeyError("Could Not Locate FFMPEG_LOCATION verify that .envs are setup correctly")
+            print("Could Not Locate FFMPEG_LOCATION verify that .envs are setup correctly")
             return
         # Grab the user destination folder first
         self.USER_PREFERENCES = await self.prisma.userpreferences.find_first(where={'DataOwnershipId': self.dataOwnership.id})
