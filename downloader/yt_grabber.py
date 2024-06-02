@@ -46,7 +46,7 @@ class Downloader:
             url_list.append(videoItem.VideoURL)
             
         with yt_dlp.YoutubeDL(ydl_opts) as ydl: 
-            error_code = ydl.download(url_list)
+            error_code = ydl.download(url_list[0:3])
         
         
         

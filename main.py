@@ -97,7 +97,7 @@ async def main():
         await prisma.video.create_many(data_to_commit)
         
     # # Video Downloads
-    # await retrieveVideos(userData, userData.DataOwnership)
+    await retrieveVideos(userData, userData.DataOwnership)
     
     
     

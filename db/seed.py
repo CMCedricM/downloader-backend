@@ -31,7 +31,7 @@ async def main() -> None:
     playlist = await prisma.userplaylist.create(
         data={
             'PlayListURL': 'PLwnRU_LD0h-vPfaupYzw5L4AVGB-vj_Kf', 
-            'PlayListTitle': "Synced Liked",
+            'PlayListTitle': "All",
             'Status': 'Active',
             'dataOwnershipId': ownership.id
         }
