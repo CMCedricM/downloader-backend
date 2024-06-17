@@ -3,3 +3,4 @@
 .DS_Store
 db_data
 Logs/*.json
+test_out/

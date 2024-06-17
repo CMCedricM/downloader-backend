@@ -1,4 +1,4 @@
-import asyncio
+import asyncio, json
 from prisma import Prisma
 
 
@@ -12,6 +12,8 @@ async def main() -> None:
     print("Deleted Data Ownership")
     await prisma.user.delete_many()
     print("Deleted User Data")
+    await prisma.userpreferences.delete_many()
+    print("Deleted User Preferences")
     
     user = await prisma.user.create(
         data={
@@ -29,12 +31,27 @@ async def main() -> None:
     playlist = await prisma.userplaylist.create(
         data={
             'PlayListURL': 'PLwnRU_LD0h-vPfaupYzw5L4AVGB-vj_Kf', 
-            'PlayListTitle': "Synced Liked",
+            'PlayListTitle': "All",
             'Status': 'Active',
             'dataOwnershipId': ownership.id
         }
     )
     print("Created Playlist")
+    musicPreferences = json.dumps({
+        'format': 'm4a/bestaudio/best',
+        'postprocessors': [{
+             'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'm4a',
+        }]
+    })
+    userPreferences = await prisma.userpreferences.create(data={
+        'DataOwnershipId': ownership.id,
+        'userEmail': user.email, 
+        'DestinationFolder': '/Users/cedric-personal/Documents/Programming/downloader-backend/test_out',
+        'DownloadType' : 'AudioOnly',
+        'MusicPreferences': musicPreferences 
+    })
+    print("Created User Preferences")
     
 if __name__ == '__main__': 
     asyncio.run(main())
