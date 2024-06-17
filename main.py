@@ -34,7 +34,7 @@ def getVideoURLs(videoData: list) -> list[dict[str, str]]:
     return videoTags     
 
 
-async def fetchUserInformation(UserID: int) -> User | None: 
+async def fetchUserInformation(UserID: int): 
     userInfo = await prisma.user.find_unique(where={'id' : int(UserID)}, include={'DataOwnership': True})
     return userInfo
 
