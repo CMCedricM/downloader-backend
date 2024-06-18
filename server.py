@@ -1,5 +1,5 @@
 from quart import Quart, request
-from main import fetchUserInformation
+from main import YT_Main
 
 app = Quart(__name__)
 
@@ -9,8 +9,11 @@ async def user():
     data = await request.get_json()
     if(data):
        userId = data.get("user")
-       user = await fetchUserInformation(userId)
-       return user
+       yt =  YT_Main(userId)
+       await yt.connect()
+       user = await yt.fetchUserInformation(userId)
+       print(user.id)
+       return  {"Data": str(user)}
     return {"Message" : "No Data"}
 
 
